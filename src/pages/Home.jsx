@@ -1,45 +1,60 @@
-import { motion } from "framer-motion";
-import { SEMINAR_HALLS } from "../data";
-import { useState } from "react";
+// src/pages/Home.jsx
 
-export default function HomePage() {
-  const [selectedHall, setSelectedHall] = useState(null);
+import React, { useRef } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { Link } from 'react-router-dom';
+
+export default function Home() {
+  const containerRef = useRef(null);
+  const { scrollYProgress } = useScroll({ target: containerRef, offset: ['start start', 'end start'] });
+  const parallaxY = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
 
   return (
-    <div className="pt-20 px-6">
-      <motion.h2 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-3xl font-bold text-center mb-6"
-      >
-        Welcome to Seminar Hall Booking System
-      </motion.h2>
-
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          {SEMINAR_HALLS.map(hall => (
-            <button
-              key={hall}
-              onClick={() => setSelectedHall(hall)}
-              className={`w-full text-left p-4 rounded-lg transition-all duration-200 ${
-                selectedHall === hall
-                  ? "bg-indigo-600 text-white shadow-lg"
-                  : "bg-white dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
-              }`}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div ref={containerRef} className="relative h-screen overflow-hidden flex items-center justify-center">
+        <motion.div className="absolute inset-0 z-0" style={{ y: parallaxY }}>
+          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 opacity-30 dark:opacity-50"></div>
+          <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-indigo-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+          <div className="absolute top-1/2 right-1/4 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-pink-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+        </motion.div>
+        <div className="relative z-10 text-center px-4">
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
+            className="text-4xl md:text-6xl font-extrabold mb-4 text-gray-900 dark:text-white"
+          >
+            Poornima University Seminar Booking System
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4, ease: 'easeOut' }}
+            className="text-lg md:text-xl mb-8 max-w-2xl mx-auto text-gray-800 dark:text-gray-300"
+          >
+            Seamlessly book, manage, and organize your events at our state-of-the-art facilities.
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6, ease: 'easeOut' }}
+            whileHover={{ scale: 1.05, boxShadow: "0px 0px 15px rgba(99, 102, 241, 0.6)" }}
+          >
+            <Link
+              to="/booking"
+              className="bg-indigo-600 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg hover:bg-indigo-700 transition-all duration-300 transform hover:scale-105"
             >
-              {hall}
-            </button>
-          ))}
-        </div>
-
-        <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-          {selectedHall ? (
-            <h3 className="text-xl font-semibold">You selected: {selectedHall}</h3>
-          ) : (
-            <p className="text-gray-500">Click a hall to view details</p>
-          )}
+              Request a Seminar Hall
+            </Link>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
-}
+};
