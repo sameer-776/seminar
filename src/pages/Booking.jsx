@@ -1,50 +1,59 @@
 // src/pages/Booking.jsx
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import PublicSeminarsList from '../components/PublicSeminarsList.jsx';
 import AvailabilityChecker from '../components/AvailabilityChecker.jsx';
 import BookingForm from '../components/BookingForm.jsx';
+import { SEMINAR_HALLS } from '../data.js';
 
 export default function Booking({ isUserLoggedIn, currentUser, setShowLogin, bookings, handleBookingRequest }) {
-  const [view, setView] = useState('request');
-  const [bookingDetails, setBookingDetails] = useState(null);
+    const [view, setView] = useState('select-hall'); // New default view
+    const [selectedHall, setSelectedHall] = useState(null);
+    const [bookingDetails, setBookingDetails] = useState(null);
 
-  const handleSlotSelect = (date, startTime, endTime) => {
-    if (!isUserLoggedIn) {
-      setBookingDetails({ date, startTime, endTime });
-      setShowLogin(true);
-    } else {
-      setBookingDetails({ date, startTime, endTime });
-      setView('form');
-    }
-  };
+    const handleHallSelect = (hall) => {
+        setSelectedHall(hall);
+        setView('request');
+    };
 
-  useEffect(() => {
-    if (isUserLoggedIn && bookingDetails && view !== 'form') {
-      setView('form');
-    }
-  }, [isUserLoggedIn, bookingDetails, view]);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.5 }}
-      className="container mx-auto px-4 sm:px-6 py-12 md:py-24"
-    >
-      <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-extrabold mb-4">Seminars & Booking</h1>
-      </div>
-      <div className="flex justify-center mb-8 space-x-2 sm:space-x-4">
-        <button onClick={() => setView('seminars')} className={`px-4 sm:px-6 py-2 rounded-full font-semibold text-sm sm:text-base ${view === 'seminars' ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}>Public Seminars</button>
-        <button onClick={() => setView('request')} className={`px-4 sm:px-6 py-2 rounded-full font-semibold text-sm sm:text-base ${view === 'request' ? 'bg-indigo-600 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}>Request a Hall</button>
-      </div>
-      <AnimatePresence mode="wait">
-        {view === 'seminars' && <PublicSeminarsList key="seminars" />}
-        {view === 'request' && <AvailabilityChecker key="calendar" bookings={bookings} onSlotSelect={handleSlotSelect} />}
-        {view === 'form' && <BookingForm key="form" currentUser={currentUser} details={bookingDetails} goBack={() => setView('request')} onSubmit={handleBookingRequest} />}
-      </AnimatePresence>
-    </motion.div>
-  );
+    const handleSlotSelect = (date, startTime, endTime) => {
+        if (!isUserLoggedIn) {
+            setBookingDetails({ date, startTime, endTime });
+            setShowLogin(true);
+        } else {
+            setBookingDetails({ date, startTime, endTime });
+            setView('form');
+        }
+    };
+    
+    useEffect(() => {
+        if (isUserLoggedIn && bookingDetails && view !== 'form') {
+            setView('form');
+        }
+    }, [isUserLoggedIn, bookingDetails, view]);
+    
+    const goBackToHallSelection = () => setView('select-hall');
+    
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="container mx-auto px-4 sm:px-6 py-12 md:py-24">
+            <AnimatePresence mode="wait">
+                {view === 'select-hall' && (
+                    <motion.div key="select-hall" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                        <h1 className="text-3xl sm:text-4xl font-extrabold text-center mb-8">Select a Seminar Hall</h1>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                            {SEMINAR_HALLS.map(hall => (
+                                <button key={hall} onClick={() => handleHallSelect(hall)} className="p-6 text-left bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all">
+                                    <h2 className="font-bold text-xl text-indigo-600 dark:text-indigo-400">{hall}</h2>
+                                </button>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
+                
+                {view === 'request' && <AvailabilityChecker key="calendar" bookings={bookings} onSlotSelect={handleSlotSelect} selectedHall={selectedHall} goBack={goBackToHallSelection}/>}
+                
+                {view === 'form' && <BookingForm key="form" currentUser={currentUser} details={bookingDetails} goBack={() => setView('request')} onSubmit={handleBookingRequest} selectedHall={selectedHall} />}
+            </AnimatePresence>
+        </motion.div>
+    );
 };
